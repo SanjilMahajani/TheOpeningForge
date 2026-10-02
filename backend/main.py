@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from game import create_session, get_session, guide, play_white_move, snapshot
+from game import create_session, get_session, guide, get_legal_moves, play_white_move, snapshot
 from lines import LINES
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -53,6 +53,12 @@ def state(session_id: str):
 def get_guide(session_id: str):
     session = _session_or_404(session_id)
     return {"moves": guide(session)}
+
+
+@app.get("/legal-moves")
+def get_legal_moves_endpoint(session_id: str):
+    session = _session_or_404(session_id)
+    return {"moves": get_legal_moves(session)}
 
 
 def _session_or_404(session_id: str):

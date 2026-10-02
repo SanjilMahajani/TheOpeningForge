@@ -45,6 +45,13 @@ def snapshot(session: Session) -> dict:
     }
 
 
+def get_legal_moves(session: Session) -> list[str]:
+    """Return all legal moves from the current position in UCI format."""
+    if session.status != "in_progress":
+        return []
+    return [move.uci() for move in session.board.legal_moves]
+
+
 def guide(session: Session) -> list[str]:
     if session.status != "in_progress":
         return []
@@ -52,7 +59,11 @@ def guide(session: Session) -> list[str]:
     # Qxf7 is the finishing move, only available after both pieces are developed.
     if "h5f7" in remaining and len(remaining) > 1:
         remaining.remove("h5f7")
-    return remaining
+    return [
+        move_uci
+        for move_uci in remaining
+        if chess.Move.from_uci(move_uci) in session.board.legal_moves
+    ]
 
 
 def play_white_move(session: Session, uci: str) -> tuple[dict, str | None]:
@@ -72,7 +83,6 @@ def play_white_move(session: Session, uci: str) -> tuple[dict, str | None]:
     if move.uci() not in available_moves:
         if move.uci() in session.line["white_moves"]:
             return snapshot(session), "move_not_ready"
-        session.status = "off_line"
         return snapshot(session), "off_line"
 
     session.board.push(move)

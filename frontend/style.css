@@ -18,3 +18,24 @@ h1 { font-family: Georgia, serif; font-size: clamp(2.6rem, 6vw, 4.4rem); line-he
 button { margin-top: auto; border: 0; padding: .85rem 1rem; background: #e6a84c; color: #20180e; font: inherit; font-weight: 800; cursor: pointer; }
 button:hover { background: #f4c270; }
 @media (max-width: 720px) { .trainer { padding: 2rem 1rem; } .game-area { grid-template-columns: 1fr; } .panel { min-height: 270px; } }
+
+/* Legal move dots */
+.legal-move-dot {
+  position: absolute;
+  width: 26%;
+  height: 26%;
+  background: rgba(30, 29, 25, 0.58);
+  border-radius: 50%;
+  top: 37%;
+  left: 37%;
+  pointer-events: none;
+}
+
+.legal-capture-ring {
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+  background: transparent;
+  border: 5px solid rgba(30, 29, 25, 0.58);
+}
