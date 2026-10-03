@@ -15,7 +15,13 @@
         <p>First drill: find Scholar's Mate against a careless defence. You play White.</p>
       </section>
       <section class="game-area" aria-label="Chess trainer">
-        <div id="board" aria-label="Interactive chessboard"></div>
+        <div class="board-wrap">
+          <div id="board" aria-label="Interactive chessboard"></div>
+          <div id="mate-overlay" hidden aria-live="assertive">
+            <span id="checkmate-badge" class="mate-badge checkmate-badge">Checkmate</span>
+            <span id="winner-badge" class="mate-badge winner-badge">♛ Winner</span>
+          </div>
+        </div>
         <aside class="panel">
           <div class="status-wrap">
             <p class="label">POSITION</p>

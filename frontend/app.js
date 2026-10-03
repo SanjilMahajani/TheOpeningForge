@@ -11,6 +11,9 @@ const statusEl = document.querySelector("#status");
 const hintEl = document.querySelector("#hint");
 const pgnEl = document.querySelector("#pgn");
 const guideToggle = document.querySelector("#guide-toggle");
+const mateOverlay = document.querySelector("#mate-overlay");
+const checkmateBadge = document.querySelector("#checkmate-badge");
+const winnerBadge = document.querySelector("#winner-badge");
 
 function uci(source, target) {
   return `${source}${target}`;
@@ -95,6 +98,29 @@ function describeStatus(state, error) {
   return "Your move — find the next attacking idea.";
 }
 
+function squarePosition(square) {
+  const file = square.charCodeAt(0) - 97;
+  const rank = Number(square[1]);
+  return {
+    x: `${((file + 0.5) / 8) * 100}%`,
+    y: `${((8.5 - rank) / 8) * 100}%`,
+  };
+}
+
+function renderMateOverlay(checkmate) {
+  if (!checkmate) {
+    mateOverlay.hidden = true;
+    return;
+  }
+  const king = squarePosition(checkmate.king_square);
+  const winner = squarePosition(checkmate.winner_square);
+  checkmateBadge.style.setProperty("--x", king.x);
+  checkmateBadge.style.setProperty("--y", king.y);
+  winnerBadge.style.setProperty("--x", winner.x);
+  winnerBadge.style.setProperty("--y", winner.y);
+  mateOverlay.hidden = false;
+}
+
 async function updateGuide() {
   hintEl.textContent = "";
   if (!guideToggle.checked || !sessionId || currentStatus !== "in_progress") return;
@@ -112,6 +138,7 @@ async function updateGuide() {
 function render(state, error = null) {
   currentStatus = state.status;
   board.position(state.fen, false);
+  renderMateOverlay(state.checkmate);
   statusEl.textContent = describeStatus(state, error);
   pgnEl.textContent = state.pgn || "—";
   clearDots();

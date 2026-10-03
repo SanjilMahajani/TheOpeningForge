@@ -37,12 +37,19 @@ def get_session(session_id: str) -> Session | None:
 
 
 def snapshot(session: Session) -> dict:
-    return {
+    state = {
         "fen": session.board.fen(),
         "pgn": _pgn(session.board),
         "status": session.status,
         "move_number": session.white_index + 1,
     }
+    if session.board.is_checkmate():
+        last_move = session.board.peek()
+        state["checkmate"] = {
+            "king_square": chess.square_name(session.board.king(session.board.turn)),
+            "winner_square": chess.square_name(last_move.to_square),
+        }
+    return state
 
 
 def get_legal_moves(session: Session) -> list[str]:
