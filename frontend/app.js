@@ -8,12 +8,24 @@ let selectedSquare = null;
 let ignoreBoardClickUntil = 0;
 
 const statusEl = document.querySelector("#status");
+const openingSelect = document.querySelector("#opening-select");
 const hintEl = document.querySelector("#hint");
 const pgnEl = document.querySelector("#pgn");
 const guideToggle = document.querySelector("#guide-toggle");
 const mateOverlay = document.querySelector("#mate-overlay");
 const checkmateBadge = document.querySelector("#checkmate-badge");
 const winnerBadge = document.querySelector("#winner-badge");
+
+async function populateOpenings() {
+  try {
+    const data = await request("/openings");
+    openingSelect.innerHTML =
+      '<option value="">-- Select an Opening --</option>' +
+      data.openings.map(o => `<option value="${o}">${o}</option>`).join("");
+  } catch (error) {
+    console.error("Failed to load openings", error);
+  }
+}
 
 function uci(source, target) {
   return `${source}${target}`;
@@ -94,6 +106,7 @@ function describeStatus(state, error) {
   if (error === "invalid_move_format") return "That move could not be read. Try again.";
   if (error === "session_finished") return "This line has already finished. Start a new one.";
   if (state.status === "success") return "Checkmate! Nicely executed.";
+  if (state.status === "complete") return "Opening line complete! Start a new line to keep training.";
   if (state.status === "off_line") return "That leaves the training line. Try a new line.";
   return "Your move — find the next attacking idea.";
 }
@@ -191,11 +204,20 @@ function onDrop(source, target, piece) {
 }
 
 async function newGame() {
+  const opening_name = openingSelect.value;
+  if (!opening_name) {
+    statusEl.textContent = "Please select an opening first.";
+    return;
+  }
   movePending = false;
   statusEl.textContent = "Setting up a new line…";
   hintEl.textContent = "";
   try {
-    const state = await request("/new-session", { method: "POST" });
+    const state = await request("/new-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ opening_name }),
+    });
     sessionId = state.session_id;
     render(state);
   } catch (error) {
@@ -203,6 +225,7 @@ async function newGame() {
   }
 }
 
+openingSelect.addEventListener("change", newGame);
 document.querySelector("#new-game").addEventListener("click", newGame);
 guideToggle.addEventListener("change", updateGuide);
 
@@ -245,5 +268,10 @@ document.querySelector("#board").addEventListener("click", (event) => {
   selectedSquare = null;
   clearDots();
 });
+async function init() {
+  await populateOpenings();
+  statusEl.textContent = "Select an opening and click 'New line' to begin.";
+}
+
 window.addEventListener("resize", () => board.resize());
-newGame();
+init();

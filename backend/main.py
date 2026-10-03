@@ -17,7 +17,11 @@ app = FastAPI(title="Opening Forge")
 
 class MoveRequest(BaseModel):
     session_id: str = Field(min_length=1)
-    move: str = Field(min_length=4, max_length=5)
+    move: str = Field(min_length=4, max_length=6)
+
+
+class NewSessionRequest(BaseModel):
+    opening_name: str | None = None
 
 
 @app.get("/", include_in_schema=False)
@@ -31,9 +35,23 @@ def favicon():
     return Response(status_code=204)
 
 
+@app.get("/openings")
+def get_openings():
+    return {"openings": [line["name"] for line in LINES]}
+
+
 @app.post("/new-session")
-def new_session():
-    session_id, session = create_session(random.choice(LINES))
+def new_session(request: NewSessionRequest = NewSessionRequest()):
+    opening = None
+    if request.opening_name:
+        for line in LINES:
+            if line["name"] == request.opening_name:
+                opening = line
+                break
+    if not opening:
+        opening = random.choice(LINES)
+
+    session_id, session = create_session(opening)
     return {"session_id": session_id, **snapshot(session)}
 
 

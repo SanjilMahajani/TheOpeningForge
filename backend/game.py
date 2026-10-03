@@ -10,7 +10,7 @@ import chess
 
 from lines import LINES
 
-Status = Literal["in_progress", "success", "off_line"]
+Status = Literal["in_progress", "success", "complete", "off_line"]
 
 
 @dataclass
@@ -62,10 +62,18 @@ def get_legal_moves(session: Session) -> list[str]:
 def guide(session: Session) -> list[str]:
     if session.status != "in_progress":
         return []
+
+    if not session.line.get("flexible_white_order", False):
+        expected = session.line["white_moves"][session.white_index]
+        return [expected] if chess.Move.from_uci(expected) in session.board.legal_moves else []
+
     remaining = [move for move in session.line["white_moves"] if move not in session.completed_white_moves]
-    # Qxf7 is the finishing move, only available after both pieces are developed.
+    # Qxf7 is the finishing move.
+    # We allow it if the line is finished or it's the last move configured.
     if "h5f7" in remaining and len(remaining) > 1:
-        remaining.remove("h5f7")
+        # Check if it's actually the *last* move in white_moves
+        if session.line["white_moves"].index("h5f7") < len(session.line["white_moves"]) - 1:
+            remaining.remove("h5f7")
     return [
         move_uci
         for move_uci in remaining
@@ -109,6 +117,8 @@ def play_white_move(session: Session, uci: str) -> tuple[dict, str | None]:
     if black_move not in session.board.legal_moves:
         raise RuntimeError("Configured training line contains an illegal Black move")
     session.board.push(black_move)
+    if session.white_index == len(session.line["white_moves"]):
+        session.status = "complete"
     return snapshot(session), None
 
 
