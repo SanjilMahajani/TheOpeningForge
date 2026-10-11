@@ -6,11 +6,12 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from game import create_session, get_session, guide, get_legal_moves, play_white_move, snapshot
+from game import create_session, get_session, guide, get_legal_moves, play_white_move, rewind_session, snapshot
 from lines import LINES
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
+DIST = FRONTEND / "dist"
 
 app = FastAPI(title="Opening Forge")
 
@@ -24,9 +25,14 @@ class NewSessionRequest(BaseModel):
     opening_name: str | None = None
 
 
+class RewindRequest(BaseModel):
+    session_id: str = Field(min_length=1)
+    ply: int = Field(ge=0)
+
+
 @app.get("/", include_in_schema=False)
 def index():
-    return FileResponse(FRONTEND / "index.html")
+    return FileResponse(DIST / "index.html")
 
 
 @app.get("/favicon.ico", include_in_schema=False)
@@ -59,7 +65,16 @@ def new_session(request: NewSessionRequest = NewSessionRequest()):
 def move(request: MoveRequest):
     session = _session_or_404(request.session_id)
     state, error = play_white_move(session, request.move.lower())
-    return {**state, "error": error}
+    return {"session_id": request.session_id, **state, "error": error}
+
+
+@app.post("/rewind")
+def rewind(request: RewindRequest):
+    session = _session_or_404(request.session_id)
+    try:
+        return {"session_id": request.session_id, **rewind_session(session, request.ply)}
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @app.get("/state")
@@ -86,4 +101,4 @@ def _session_or_404(session_id: str):
     return session
 
 
-app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
+app.mount("/", StaticFiles(directory=DIST, html=True), name="frontend")

@@ -1,53 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#091311" />
+    <meta name="color-scheme" content="dark" />
     <title>Opening Forge</title>
-    <link rel="stylesheet" href="/static/vendor/chessboard/chessboard-1.0.0.min.css" />
-    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/jquery/jquery-3.5.1.min.js"></script>
+    <script src="/chessboard/chessboard-1.0.0.min.js"></script>
   </head>
   <body>
-    <main class="trainer">
-      <section class="intro">
-        <p class="eyebrow">CHESS OPENING DRILL</p>
-        <h1>Opening Forge</h1>
-        <p>First drill: find Scholar's Mate against a careless defence. You play White.</p>
-      </section>
-      <section class="game-area" aria-label="Chess trainer">
-        <div class="board-wrap">
-          <div id="board" aria-label="Interactive chessboard"></div>
-          <div id="mate-overlay" hidden aria-live="assertive">
-            <span id="checkmate-badge" class="mate-badge checkmate-badge">Checkmate</span>
-            <span id="winner-badge" class="mate-badge winner-badge">♛ Winner</span>
-          </div>
-        </div>
-        <aside class="panel">
-          <div class="status-wrap">
-            <p class="label">OPENING</p>
-            <select id="opening-select">
-              <option value="">-- Select an Opening --</option>
-            </select>
-          </div>
-          <div class="status-wrap">
-            <p class="label">POSITION</p>
-            <p id="status" role="status">Starting a new game…</p>
-          </div>
-          <label class="guide-control">
-            <input id="guide-toggle" type="checkbox" />
-            <span>Show move guide</span>
-          </label>
-          <p id="hint" class="hint" aria-live="polite"></p>
-          <div class="moves">
-            <p class="label">MOVES</p>
-            <p id="pgn">—</p>
-          </div>
-          <button id="new-game" type="button">New line</button>
-        </aside>
-      </section>
-    </main>
-    <script src="/static/vendor/jquery/jquery-3.5.1.min.js"></script>
-    <script src="/static/vendor/chessboard/chessboard-1.0.0.min.js"></script>
-    <script src="/static/app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
